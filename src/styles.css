@@ -1,0 +1,18 @@
+.App {
+  font-family: sans-serif;
+}
+
+.card-list {
+  padding: 5px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.userStyles {
+  padding: 5px;
+  text-align: left;
+  border: solid #aa3bff;
+  border-radius: 5px;
+  color: #08060d;
+}
