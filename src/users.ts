@@ -3,11 +3,12 @@ export type User = {
   name: string;
   email: string;
   role: "Engineer" | "Designer" | "Manager";
+  details: string;
 };
 
 export const users: User[] = [
-  { id: 1, name: "Anna", email: "anna@test.com", role: "Engineer" },
-  { id: 2, name: "Ben", email: "ben@test.com", role: "Designer" },
-  { id: 3, name: "Carlos", email: "carlos@test.com", role: "Engineer" },
-  { id: 4, name: "Diana", email: "diana@test.com", role: "Manager" },
+  { id: 1, name: "Anna", email: "anna@test.com", role: "Engineer", details: " lorem ipsum dolor sit amet" },
+  { id: 2, name: "Ben", email: "ben@test.com", role: "Designer", details: "lorem ipsum dolor sit amet" },
+  { id: 3, name: "Carlos", email: "carlos@test.com", role: "Engineer", details: "lorem ipsum dolor sit amet" },
+  { id: 4, name: "Diana", email: "diana@test.com", role: "Manager", details: "lorem ipsum dolor sit amet" },
 ];
