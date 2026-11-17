@@ -17,3 +17,11 @@
   border-radius: 5px;
   color: #08060d;
 }
+
+.signupForm {
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  text-align: left;
+  gap: 5px;
+}
