@@ -1,16 +1,18 @@
 # Four-day React + TypeScript interview preparation
 
-**Time:** 8 focused hours per day, plus breaks. **Target:** a mid-level React interview.
+**Time:** 8 focused hours per day, plus breaks. **Target:** a mid-level React interview with AI assistance allowed.
 
 This plan targets gaps observed in your mock interviews: state and rendering, effect lifecycle, asynchronous requests, cleanup, and explaining behavior precisely. It cannot guarantee an interview pass. Adapt the final day if your interview happens that day.
 
 ## How to practice
 
-1. Attempt each exercise without a solution or AI hints.
+1. Explain your approach and attempt the core logic yourself, then use AI as permitted in your actual interview. During timed mocks, practice that same AI-assisted workflow.
 2. Predict the behavior before running it.
 3. Run it and verify specific outcomes.
 4. Explain your implementation aloud.
 5. Record mistakes, then rebuild the difficult part from memory later.
+
+Use the videos below instead of long reading blocks; documentation remains an optional reference. Watch one concept, pause to predict the behavior, close the video, and implement it from memory. Review AI-generated code, test it, and explain every part you accept.
 
 Use 50–60 minute blocks with breaks. Scheduled hours below are focused work, excluding meals and breaks. Protect sleep; extra hours should be light review rather than exhausted coding.
 
@@ -18,11 +20,20 @@ Use 50–60 minute blocks with breaks. Scheduled hours below are focused work, e
 
 | Duration | Work |
 | --- | --- |
-| 2 hours | Read the state resources below and complete their interactive challenges. |
+| 2 hours | Watch the Day 1 videos below, code along briefly, then complete selected state challenges without copying solutions. |
 | 2 hours | Rebuild the synchronous User Directory from scratch using Exercise A. |
 | 1 hour | Practice array operations, immutability, closures, and promises. Predict outputs before running examples. |
 | 1 hour | Practice TypeScript unions, props, callbacks, and narrowing with Exercise B. |
 | 2 hours | Run a 45-minute directory mock; review mistakes and rebuild the weakest part without notes. |
+
+### Day 1 videos — watch, then build
+
+| Video | Follow-up exercise |
+| --- | --- |
+| [Learn useState in 15 Minutes — Web Dev Simplified](https://www.youtube.com/watch?v=O6P86uwfdR0) | Build a controlled input and a counter. Compare three direct increments with three functional updates; explain the results. |
+| [JavaScript Promises in 10 Minutes — Web Dev Simplified](https://www.youtube.com/watch?v=DHvZLI7Db8E) | Create deterministic successful and failing promises; predict the order of `then`, `catch`, and `finally`. |
+
+Keep most of this block for hands-on work rather than replaying videos.
 
 ### Linked exercises and resources
 
@@ -64,8 +75,8 @@ Explain without notes: state snapshots, derived values versus state, local versu
 
 | Duration | Work |
 | --- | --- |
-| 2 hours | Study effects, dependencies, cleanup, fetching, and Strict Mode. Complete the linked React challenges. |
-| 2 hours | Add loading, success, failure, retry, and empty-response UI to the directory. |
+| 2 hours | Watch the Day 2 videos, practice setup/cleanup logging, and use the React references for Strict Mode and dependency questions. |
+| 2 hours | Complete Exercise C1: fetch real users from DummyJSON, adapt the response, and implement loading/error/retry UI. |
 | 1 hour | Implement cleanup and explain why every asynchronous state update needs protection. |
 | 1 hour | Force responses to arrive out of order; verify old successes and failures are ignored. |
 | 2 hours | Run a 45-minute async mock, review it, and rebuild the request lifecycle from memory. |
@@ -78,7 +89,55 @@ Explain without notes: state snapshots, derived values versus state, local versu
 - [You Might Not Need an Effect — lesson and challenges](https://react.dev/learn/you-might-not-need-an-effect): distinguish derived calculations and event handling from synchronization.
 - [MDN: AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController): understand cancellation for APIs that support it.
 
-### Exercise C — Async User Directory
+### Day 2 videos — highest priority
+
+| Video | Follow-up exercise |
+| --- | --- |
+| [Learn useEffect in 13 Minutes — Web Dev Simplified](https://www.youtube.com/watch?v=0ZJgIjIuY7U) | Log setup and cleanup. Change a dependency, unmount, and explain the sequence. |
+| [Mastering useEffect: Avoid Race Conditions — Jack Herrington](https://www.youtube.com/watch?v=fXD9Ct03Q6k) | Make A finish after B. Ensure old successes, failures, and finalization callbacks cannot overwrite the current UI. |
+
+The short race-condition video is a supplement, not a replacement for implementing and tracing cleanup yourself.
+
+### Exercise C1 — Fetch from a real API (2 hours)
+
+**Free practice API:** [DummyJSON users documentation](https://dummyjson.com/docs/users). Use its public users endpoint:
+
+```text
+https://dummyjson.com/users?limit=20
+```
+
+No API key is needed for this public endpoint. This is a real HTTP request serving fake practice data. The response is an object containing `users`, `total`, `skip`, and `limit`, rather than a bare array. See the [general documentation](https://dummyjson.com/docs) for response delays and other testing features.
+
+**First 30 minutes — inspect and adapt**
+
+- [ ] Inspect the response in the browser Network panel.
+- [ ] Define the API response type separately from your UI user type.
+- [ ] Map `firstName` and `lastName` to your displayed name, retaining ID and email.
+- [ ] Use the API's `role` values and derive your dropdown from fetched users. Update your old Engineer/Designer/Manager union to match the API rather than pretending those roles exist in the response.
+- [ ] Choose real returned fields, such as phone or company information, for expandable details.
+
+**Next 60 minutes — implement**
+
+- [ ] Fetch on mount using `fetch()` and `async`/`await` or a promise chain.
+- [ ] Check `response.ok`; throw a useful error for non-success HTTP statuses.
+- [ ] Parse JSON and extract `data.users`.
+- [ ] Implement loading, error, Retry, and successful rendering.
+- [ ] Keep search, role filtering, sorting, and details working.
+- [ ] Add effect cleanup using an `AbortController` and/or an effect-local active flag. Treat cleanup cancellation differently from a user-visible failure and protect every asynchronous state update.
+- [ ] Explain that TypeScript annotations do not validate network data at runtime. Identify where validation would belong; a validation library is not required for this exercise.
+
+**Final 30 minutes — verify**
+
+- [ ] Test normal success and use browser network throttling to observe loading.
+- [ ] Set DevTools to Offline for a network failure; restore the network and click Retry.
+- [ ] Use a deterministic mocked HTTP 500 response to verify the `response.ok` branch. Offline mode alone does not test HTTP error handling.
+- [ ] Supply a controlled empty response to test API-empty UI; don't rely on external data disappearing.
+- [ ] Unmount during a pending request and confirm obsolete callbacks cannot affect current UI.
+- [ ] Explain: `fetch()` generally rejects for network failures or cancellation, but a 404/500 response requires an explicit status check.
+
+Use mocks for repeatable failures, empty data, and response ordering. Keep at least one manual successful request against the real API.
+
+### Exercise C — Async User Directory checklist
 
 - [ ] Load users on mount.
 - [ ] Show loading immediately, without an initial empty-state flash.
@@ -108,7 +167,7 @@ Draw and explain: mount → pending → success/failure → retry → cleanup. E
 
 | Duration | Work |
 | --- | --- |
-| 1 hour | Study Testing Library examples and asynchronous queries. |
+| 1 hour | Watch selected lessons from the Day 3 testing series and practice asynchronous queries. |
 | 2 hours | Write the behavioral tests in Exercise D. |
 | 1 hour | Review labels, semantic buttons, keyboard operation, and expansion accessibility. |
 | 1 hour | Review unions, narrowing, nullable state, and typed events. |
@@ -122,6 +181,12 @@ Draw and explain: mount → pending → success/failure → retry → cleanup. E
 - [Testing Library: query priorities](https://testing-library.com/docs/queries/about/#priority): select controls by role and accessible name.
 - [TypeScript: narrowing](https://www.typescriptlang.org/docs/handbook/2/narrowing.html): revisit discriminated unions and `unknown`.
 - [WAI: disclosure pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/): compare your details toggle with the accessible interaction pattern.
+
+### Day 3 videos — testing
+
+Use [Codevolution’s React Testing tutorial series](https://www.youtube.com/playlist?list=PLC3y8-rFHvwirqe1KHFCHJ0RqNuN61SJd). Select lessons on rendering, queries by role, user interactions, and asynchronous testing. Limit viewing to the scheduled hour; do not try to complete the entire playlist.
+
+After each relevant lesson, write one test against your own directory. Adapt setup to the existing project instead of spending the day migrating test tools.
 
 ### Exercise D — Test behavior
 
@@ -139,7 +204,7 @@ Prefer assertions about visible outcomes and controls rather than internal state
 
 ### Fresh mock — Product Browser
 
-In 60 minutes, build a React + TypeScript product browser with asynchronous loading, error/retry, name search, category filter, price sorting, expandable details, and distinct empty states. Protect against obsolete responses. Use no hints during the timed attempt.
+In 60 minutes, build a React + TypeScript product browser with asynchronous loading, error/retry, name search, category filter, price sorting, expandable details, and distinct empty states. Protect against obsolete responses. Use AI as allowed in your interview. Before accepting its code, inspect it, verify the behavior, and explain the decisions yourself. Record where AI helped and any errors you caught.
 
 Afterward, record incomplete requirements, incorrect explanations, untested cases, and time spent debugging. Rebuild the weakest part.
 
@@ -215,11 +280,12 @@ Add your own mistakes after each practice session.
 
 ## Readiness checkpoint
 
-- [ ] Complete the async directory in 45–60 minutes without substantial hints.
+- [ ] Complete the async directory in 45–60 minutes using the AI access permitted in the interview, while owning the implementation and verification.
+- [ ] Fetch and adapt a real API response; distinguish network failures from HTTP errors.
 - [ ] Explain the state and effect lifecycle accurately without memorized wording.
 - [ ] Demonstrate success, failure, retry, both empty states, and obsolete-response protection.
 - [ ] Write meaningful behavioral tests.
 - [ ] Explain tradeoffs and identify remaining limitations.
 - [ ] Tell three clear stories about your own engineering work.
 
-Prioritize independent implementation and precise explanations over adding libraries or memorizing trivia.
+Prioritize understanding, verification, and precise explanations over adding libraries or memorizing trivia. On Day 4, spend most of your time implementing and explaining rather than watching more videos.
