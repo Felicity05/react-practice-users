@@ -1,18 +1,12 @@
 import "./styles.css";
-import { UserList } from "./UserList";
-import { SignupForm } from "./signup/SignupForm";
-import {useState} from "react";
+import { PostSearch } from "./mock/PostSearch";
 
+// Mock branch: only the exercise renders, so the Network tab shows only its requests.
+// The user directory and signup form are still in their files and on main.
 export default function App() {
- const [showUsers, setShowUsers] = useState(true);
-
   return (
     <div className="App">
-      <button onClick={() => setShowUsers(!showUsers)}>{showUsers ? "Hide Users" : "Show Users"}</button>
-      {showUsers && <UserList />}
-      <hr />
-      <SignupForm />
-      <hr />
+      <PostSearch />
     </div>
   );
 }
