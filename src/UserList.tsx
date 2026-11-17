@@ -1,59 +1,35 @@
 import {useEffect, useState} from "react";
 import UserCard from "./UseCard";
-import {User, users} from "./users";
+import {User} from "./users";
 import {fetchUsers} from "./api";
+import {getErrorMessage} from "./errors";
+
+type RequestState =
+    | {status: 'loading'}
+    | {status: 'success', data: User[] }
+    | {status: 'error', message: string }
+
+type SortDirection = 'asc' | 'desc';
 
 export function UserList() {
   const [searchValue, setSearchValue] = useState("");
   const [selectedRole, setSelectedRole] = useState("All Roles");
-  const [sortByName, setSortByName] = useState("asc");
-  const [fetchedUsers, setFetchedUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [retryCounter, setRetryCounter] = useState(0);
-
-  /*
-    1. Each effect execution creates its own active variable, initially true.
-    2. The request starts. Every callback checks that execution’s flag before updating the state.
-    3. React calls the returned cleanup function when the component unmounts or before rerunning the effect because retryCounter changed.
-    4. Cleanup sets that execution’s active to false. Its request can still finish, but its callbacks won’t update the state.
-
-    A new effect execution gets a separate flag, so cleaning up the previous request doesn’t invalidate the new one.
-    Your Retry button can now just trigger another attempt, since the effect clears the error:
-
-    <button onClick={() => setRetryCounter((previous) => previous + 1)}>
-      Try Again
-    </button>
-
-    The cleanup invalidates the request’s callbacks; it doesn’t reset the component state or cancel the request.
-    For this simulated API, ignoring its result is sufficient.
-  * */
+  const [requestState, setRequestState] = useState<RequestState>({status: 'loading'});
 
   useEffect(() => {
       let active = true;
 
-      setLoading(true);
-      setError(null);
+      setRequestState({status: 'loading'});
 
-      fetchUsers().then(
-          (users) => {
-              if (active) {
-                  setFetchedUsers(users);
-              }
+      fetchUsers()
+          .then((users) => {
+              if (active) setRequestState({status: 'success', data: users});
           })
           .catch((error: unknown) => {
-              if (active) {
-                  setError(error instanceof Error
-                      ? error
-                      : new Error("Unable to load users")
-                  )
-              }
+              if (active) setRequestState({status: 'error', message: getErrorMessage(error)});
           })
-          .finally(() => {
-              if (active) {
-                  setLoading(false);
-              }
-          });
 
       return () => {
           active = false;
@@ -65,13 +41,14 @@ export function UserList() {
     setSearchValue(value);
   };
 
-  const uniqueRoles = Array.from(new Set(fetchedUsers.map((user) => user.role)));
+  const loadedUsers = requestState.status === "success" ? requestState.data : [];
+  const uniqueRoles = Array.from(new Set(loadedUsers.map((user) => user.role)));
 
-  const filteredUsers = fetchedUsers.filter((user) =>
+  const filteredUsers = loadedUsers.filter((user) =>
       user.name.toLowerCase().includes(searchValue.toLowerCase()) &&
       (selectedRole === "All Roles" || user.role === selectedRole)
   ).sort((a, b) => {
-    if (sortByName === "asc") {
+    if (sortDirection === "asc") {
       return a.name.localeCompare(b.name);
     } else {
       return b.name.localeCompare(a.name);
@@ -88,30 +65,30 @@ export function UserList() {
               {["All Roles", ...uniqueRoles].map((role) =>
                   <option key={role} value={role}>{role}</option>)}
           </select>
-          <select value={sortByName}  aria-label="Sort by Name"
-                  onChange={(event) => setSortByName(event.target.value)}>
+          <select value={sortDirection}  aria-label="Sort by Name"
+                  onChange={(event) => setSortDirection(event.target.value as SortDirection)}>
               <option value="asc">Ascending A-Z</option>
               <option value="desc">Descending Z-A</option>
           </select>
-          {!loading && !error && fetchedUsers.length === 0 && <h2>No users found</h2>}
 
-          {!loading && error && <div>
-              <h2>Error: {error.message}</h2>
-              <button onClick={() => {
-                  setRetryCounter(retryCounter + 1)
-                  setError(null)
-              }}>Try Again</button>
+          {requestState.status === "loading" && <h2>Loading...</h2> }
+
+          {requestState.status === "error" && <div>
+              <h2>Error: {requestState.message}</h2>
+              <button onClick={() => setRetryCounter((c) => c + 1)}>Try Again</button>
           </div>}
 
-          {loading  && !error && <h2>Loading...</h2> }
-
-          {!loading && !error && fetchedUsers.length > 0 && <div className="card-list">
-              {filteredUsers.length === 0 ?
-                  <h1>No users found that match your search criteria "{searchValue} - {selectedRole}". Try a new search again.</h1>
-                  : filteredUsers.map((user) => (
-                  <UserCard key={user.id} user={user} />
-              ))}
-            </div>}
+          {requestState.status === 'success' && (
+              requestState.data.length === 0 ? (
+                  <h2>No users found</h2>
+              ) : filteredUsers.length === 0 ? (
+                  <h2>No users match "{searchValue}" in {selectedRole}. Try a new search again.</h2>
+              ) : (
+                  <div className="card-list">
+                      {filteredUsers.map((user) => <UserCard key={user.id} user={user} />)}
+                  </div>
+              )
+          )}
       </div>
   );
 }

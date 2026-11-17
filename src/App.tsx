@@ -5,9 +5,10 @@ import { SignupForm } from "./signup/SignupForm";
 export default function App() {
   return (
     <div className="App">
+      <UserList />
+      <hr />
       <SignupForm />
       <hr />
-      {/*<UserList />*/}
     </div>
   );
 }
