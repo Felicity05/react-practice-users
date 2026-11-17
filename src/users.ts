@@ -1,10 +1,14 @@
+import type {Role} from "./dummyApi";
+
 export type User = {
   id: number;
   name: string;
   email: string;
-  role: "Engineer" | "Designer" | "Manager";
+  role: StaticRole | Role;
   details: string;
 };
+
+type StaticRole = "Engineer" | "Designer" | "Manager";
 
 export const users: User[] = [
   { id: 1, name: "Anna", email: "anna@test.com", role: "Engineer", details: " lorem ipsum dolor sit amet" },

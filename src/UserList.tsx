@@ -1,15 +1,19 @@
 import {useEffect, useState} from "react";
 import UserCard from "./UseCard";
 import {User} from "./users";
-import {fetchUsers} from "./api";
 import {getErrorMessage} from "./errors";
+import {fetchDummyUsers} from "./dummyApi";
 
 type RequestState =
     | {status: 'loading'}
-    | {status: 'success', data: User[] }
-    | {status: 'error', message: string }
+    | {status: 'success', data: User[], source: string }
+    | {status: 'error', message: string, source: string }
 
 type SortDirection = 'asc' | 'desc';
+
+// Race-condition practice: odd Refresh clicks start request A (slow), even clicks start B (fast).
+// Set to true to make the slow request A fail with HTTP 500.
+const SLOW_REQUEST_FAILS = false;
 
 export function UserList() {
   const [searchValue, setSearchValue] = useState("");
@@ -20,19 +24,32 @@ export function UserList() {
 
   useEffect(() => {
       let active = true;
+      const controller = new AbortController();
+
+      const isSlow = retryCounter % 2 === 1;          // odd clicks = A
+      const name = isSlow ? "A (slow)" : "B (fast)";
+      console.log(`start ${name}`);
 
       setRequestState({status: 'loading'});
 
-      fetchUsers()
+      fetchDummyUsers({
+          signal: controller.signal,
+          delayMs: isSlow ? 2000 : 200,
+          failStatus: isSlow && SLOW_REQUEST_FAILS ? 500 : undefined,
+      })
           .then((users) => {
-              if (active) setRequestState({status: 'success', data: users});
+              console.log(`arrived ${name} (active: ${active})`);
+              if (active) setRequestState({status: 'success', data: users, source: name});
           })
           .catch((error: unknown) => {
-              if (active) setRequestState({status: 'error', message: getErrorMessage(error)});
+              console.log(`failed ${name} (active: ${active})`, getErrorMessage(error));
+              if (active) setRequestState({status: 'error', message: getErrorMessage(error), source: name});
           })
 
+      //Cleanup function: cancel the pending request and ignore its result.
       return () => {
-          active = false;
+          controller.abort(); //cancels the network request if there's an error
+          active = false; //protects state from any callback that still runs and sets the request as inactive
       };
 
   }, [retryCounter]);
@@ -57,6 +74,7 @@ export function UserList() {
 
   return (
       <div>
+          <button onClick={() => setRetryCounter((prevCounter) => prevCounter + 1)}>Refresh {retryCounter}</button>
         <input placeholder="Search user..." value={searchValue} aria-label="Search user"
             onChange={(event) => handleChange(event.target.value)}
         />
@@ -72,6 +90,12 @@ export function UserList() {
           </select>
 
           {requestState.status === "loading" && <h2>Loading...</h2> }
+
+          {requestState.status !== "loading" && (
+              <p style={{fontSize: "20px", fontWeight: "bold", backgroundColor: "#aa3bff", color: "white", padding: "10px", textAlign: "center"}}>
+                  Screen shows request {requestState.source} ({requestState.status})
+              </p>
+          )}
 
           {requestState.status === "error" && <div>
               <h2>Error: {requestState.message}</h2>
