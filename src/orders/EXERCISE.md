@@ -15,7 +15,7 @@ Then work through these bug reports. Each one is what a user or teammate saw, no
 3. "Dates are one day early for me." (Users are in the US.)
 4. "The Total column shows the status, and the Status column shows the price."
 5. "Sorting does nothing on All, and Newest/Oldest doesn't change the order on any filter."
-6. "With the shipped filter, I see 'No orders yet.' under the rows" — and with `?scenario=empty`, two messages show.
+6. "With `?scenario=empty`, I see two messages: 'No orders yet.' and 'No  orders.'" A filter that matches nothing would show both too.
 7. "Cancel does nothing for Dana Brooks, and there's a red error in the console."
 8. "I clicked Ben, then quickly Ava, and the details show Ben."
 9. A reviewer's comments, no user report:
