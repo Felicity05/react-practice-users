@@ -43,8 +43,8 @@ export function TicketsPage() {
   }, []);
 
   useEffect(() => {
-    let active = true;
     if(!selectedId) return;
+    let active = true;
 
     setDetails({ status: "loading" });
 
@@ -110,7 +110,7 @@ export function TicketsPage() {
               setPage(1);
             }}
           >
-            {tab} ({counts[tab as keyof typeof counts]})
+            {tab} ({counts[tab]})
           </button>
         ))}
       </div>
